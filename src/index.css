@@ -8,3 +8,16 @@ body{
   padding: 0;
   margin: 0;
 }
+
+@media (width < 1080px){
+  .container{
+      margin-block: 5vh;
+  }
+}
+
+@media (width >= 1080px){
+  .container{
+      margin-inline: 15vw;
+      margin-block: 10vh;
+  } 
+}

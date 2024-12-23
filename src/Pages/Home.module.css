@@ -5,9 +5,7 @@ table{
     
 
 @media (width < 1080px){
-    .container{
-        margin-block: 5vh;
-    }
+
 
     table{
         display: none;
@@ -16,10 +14,6 @@ table{
     
 }
 @media (width >= 1080px){
-    .container{
-        margin-inline: 15vw;
-        margin-block: 10vh;
-    } 
 
     table{
         border-width: 1px;

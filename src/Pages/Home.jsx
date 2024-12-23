@@ -1,12 +1,12 @@
 import HomeS from "./Home.module.css"
-import NavBar from "../../Components/NavBar.jsx"
+import NavBar from "../Components/NavBar.jsx"
 
 function Home(){
     return(
         <>
         <NavBar/>
-        <div className={HomeS.container}>
-            <table>
+        <div className="container">
+            <table className={HomeS}>
                 <thead>
                     <tr >
                         <th scope="col">#</th>
