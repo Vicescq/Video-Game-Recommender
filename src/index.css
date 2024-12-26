@@ -1,3 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 :root {
   font-family: "Source Code Pro";
   color: rgba(255, 255, 255);
@@ -9,15 +14,15 @@ body{
   margin: 0;
 }
 
-@media (width < 1080px){
-  .container{
+/* @media (width < 1080px){
+  .abc{
       margin-block: 5vh;
   }
 }
 
 @media (width >= 1080px){
-  .container{
+  .abc{
       margin-inline: 15vw;
       margin-block: 10vh;
   } 
-}
+} */
