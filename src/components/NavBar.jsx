@@ -1,22 +1,25 @@
 import controller from "../Assets/controller.svg"
-import searchbar from "../Assets/searchbar.svg"
+import search from "../Assets/search.svg"
+import { Link } from "react-router"
 
 export default function NavBar(){
 
 
     return(
         <>
-        <nav className="bg-slate-800 py-1 flex">
+        <nav className="bg-slate-800 py-2 px-5 flex">
             <ul className="flex">
-                <img src={controller} className="max-w-12"/>
-                <img src={controller} className="max-w-12"/>
-                <img src={controller} className="max-w-12"/>
-                <img src={controller} className="max-w-12"/>
+                <li><img src={controller} className="min-w-8 hover:cursor-pointer"/> <a href="/page"></a></li>
+                
+
             </ul>
 
             <ul className="flex ml-auto">
-                <img src={searchbar} className="max-w-12"/>
-                <img src={controller} className="max-w-12"/>
+                <li>
+                    <img src={search} className="min-w-8 hover:cursor-pointer"/>
+                    <Link to="/gameprofile"></Link>
+                </li> 
+
             </ul>
         </nav>
         
