@@ -17,7 +17,7 @@ def quick_search():
 
 @app.route("/dev")
 def dev():
-    IGDB_INSTANCE.quick_search("iceborne")
+    IGDB_INSTANCE.quick_search("alpha")
     return IGDB_INSTANCE.data
 
 def manage_token_states():
@@ -28,5 +28,5 @@ def manage_token_states():
 if __name__ == "__main__":
     IGDB_INSTANCE.init_token()
     manage_token_states()
-    app.run()
+    app.run(debug=True)
     

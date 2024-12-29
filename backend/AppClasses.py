@@ -104,14 +104,13 @@ class IGDB:
     
     # Private methods
     def _handle_response(self, response):
-        self.data["code"] = response.status_code
-        self.data["reason"] = response.reason
         try:
             response.raise_for_status()
             return True
 
-        except requests.exceptions.HTTPError:
+        except requests.exceptions.HTTPError as error:
             self.data.pop("data", None)
+            self.data["error"] = str(error)
             
     def _wrap_response(self, raw_data):
         self.data["data"] = raw_data

@@ -13,10 +13,21 @@ export default function NavBar(){
 
             <ul className="flex ml-auto">
                 <Link to="/gameprofile"><img src={search} className="min-w-8 cursor-pointer"/></Link>
+                <NavSearch/>
             </ul>
         </nav>
         </>
+        
     )
         
     
+}
+
+
+function NavSearch(){
+    return(
+        <>
+        abc
+        </>
+    )
 }
