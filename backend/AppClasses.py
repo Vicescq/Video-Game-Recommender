@@ -4,16 +4,12 @@ load_dotenv()
 
 class IGDB:
     def __init__(self):
-        self._data = {}
         self._token = ""
         self._expiry = 0   # placeholder int, will be set to the actual expiry in init_token()
         self._base_endpoint = "https://api.igdb.com/v4/"
-        self._endpoint = "" 
         self._headers = {}
-        self._body = ""
-    
-    
-    # Getter and Setters
+        self._token_ctime = 0
+
     @property
     def token(self):
         return self._token
@@ -29,23 +25,9 @@ class IGDB:
         self._expiry = value
 
     @property
-    def data(self):
-        return self._data
-    @data.setter
-    def data(self, value):
-        self._data = value
-
-    @property
     def base_endpoint(self):
         return self._base_endpoint
-
-    @property
-    def endpoint(self):
-        return self._endpoint
-    @endpoint.setter
-    def endpoint(self, value):
-        self._endpoint = value
-
+    
     @property
     def headers(self):
         return self._headers
@@ -54,14 +36,12 @@ class IGDB:
         self._headers = value
 
     @property
-    def body(self):
-        return self._body
-    @body.setter
-    def body(self, value):
-        self._body = value
+    def token_ctime(self):
+        return self._token_ctime
+    @token_ctime.setter
+    def token_ctime(self, value):
+        self._token_ctime = value
 
-
-    # Methods
     def init_token(self):
         endpoint = "https://id.twitch.tv/oauth2/token"
         client_id = os.getenv("CLIENT_ID")
@@ -72,91 +52,89 @@ class IGDB:
             "grant_type": "client_credentials"
         }
         response = requests.post(endpoint, data=body)
-        if self._handle_response(response):
-            token = response.json()["access_token"]
-            expiry = response.json()["expires_in"]
-            self.token = token
-            self.expiry = expiry
-            
-            # setting the header due to token being retrieved
+        response = self._handle_response(response)
+        if response["success"]:
+            self.token = response["data"]["access_token"]
+            self.expiry = response["data"]["expires_in"]
             self.headers = {
                 "Client-ID": client_id,
                 "Authorization": f"Bearer {self.token}"
             }
     
     def quick_search(self, game_query: str):
-        self.endpoint = self.base_endpoint + "games"
-        self.body = """
+        endpoint = self.base_endpoint + "games"
+        body = """
                 search "{}";
                 fields cover, first_release_date, name, url;
                 where version_parent = null;
-                limit 10;
+                limit 20;
         """.format(game_query)
-        response = requests.post(self.endpoint, headers=self.headers, data=self.body)
-        if self._handle_response(response):
-            games = response.json()
-            self._wrap_response(games)
-            for i, game in enumerate(self.data["data"]):
+        response = requests.post(endpoint, headers=self.headers, data=body)
+        response = self._handle_response(response)
+        if response["success"]:
+            games = response["data"]
+            for i, game in enumerate(games):
                 if "cover" in game:
-                    self._get_game_img(i, game["cover"])
+                    response = self._get_game_img(i, game["cover"], response)
                 else:
-                    pass # TODO: implement default img!!!
-    
-    # Private methods
+                    pass # TODO: implement default img!!!    
+        return response
+            
+    # Internal methods
     def _handle_response(self, response):
         try:
             response.raise_for_status()
-            return True
+            return {"success": True, "data": response.json()}
 
         except requests.exceptions.HTTPError as error:
-            self.data.pop("data", None)
-            self.data["error"] = str(error)
-            
-    def _wrap_response(self, raw_data):
-        self.data["data"] = raw_data
+            return {"success": False, "error": str(error)}
 
-    def _get_game_img(self, i, cover_id):
+
+    def _get_game_img(self, i, cover_id, response):
         self.endpoint = self.base_endpoint + "covers"
         self.body = """
                 fields *;
                 where id = {};
         """.format(cover_id)
-        response = requests.post(self.endpoint, headers=self.headers, data=self.body)
-        if self._handle_response(response):
-            hash = response.json()[0]["image_id"]
+        cover_response = requests.post(self.endpoint, headers=self.headers, data=self.body)
+        cover_response = self._handle_response(cover_response)
+        if cover_response["success"]:
+            hash = cover_response["data"][0]["image_id"]
             img = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{hash}.jpg"
-            self.data["data"][i]["img"] = img
+            
+            response["data"][i]["img"] = img
+        return response
                 
-class TokenState:
-    """
-    Manages the state of the token for its refresh logic
-    """
+# class TokenState:
+#     """
+#     Manages the state of the token for its refresh logic
+#     """
 
-    def __init__(self):
-        self._curr_time = 0
+#     def __init__(self):
+#         self._curr_time = 0
     
-    @property
-    def curr_time(self):
-        return self._curr_time
-    @curr_time.setter
-    def curr_time(self, value):
-        self._curr_time = value
+#     @property
+#     def curr_time(self):
+#         return self._curr_time
+#     @curr_time.setter
+#     def curr_time(self, value):
+#         self._curr_time = value
 
-    # Methods
-    def update_time(self):
-        while True:
-            self.curr_time += 1
-            time.sleep(1)
-            #print(self.curr_time)
+#     # Methods
+#     def update_time(self):
+#         while True:
+#             self.curr_time += 1
+#             time.sleep(1)
+#             #print(self.curr_time)
 
-    def token_refresh(self, igdb_instance):
-        while True:
-            if self.curr_time > (0.9 * igdb_instance.expiry):
-                igdb_instance.init_token()
-                self.curr_time = 0
-            time.sleep(10)
+#     def token_refresh(self, igdb_instance):
+#         while True:
+#             if self.curr_time > (0.9 * igdb_instance.expiry):
+#                 igdb_instance.init_token()
+#                 self.curr_time = 0
+#             time.sleep(10)
 
-        # DEBUGGING
+        # # DEBUGGING
         # time.sleep(1)
         # while True:
         #     time.sleep(1)
