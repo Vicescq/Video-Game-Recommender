@@ -8,7 +8,6 @@ class IGDB:
         self._expiry = 0   # placeholder int, will be set to the actual expiry in init_token()
         self._base_endpoint = "https://api.igdb.com/v4/"
         self._headers = {}
-        self._token_ctime = 0
 
     @property
     def token(self):
@@ -35,14 +34,16 @@ class IGDB:
     def headers(self, value):
         self._headers = value
 
-    @property
-    def token_ctime(self):
-        return self._token_ctime
-    @token_ctime.setter
-    def token_ctime(self, value):
-        self._token_ctime = value
-
     def init_token(self):
+        
+        def callback(self, response):
+            self.token = response["data"]["access_token"]
+            self.expiry = response["data"]["expires_in"]
+            self.headers = {
+                "Client-ID": client_id,
+                "Authorization": f"Bearer {self.token}"
+            }
+        
         endpoint = "https://id.twitch.tv/oauth2/token"
         client_id = os.getenv("CLIENT_ID")
         client_secret = os.getenv("CLIENT_SECRET")
@@ -52,16 +53,18 @@ class IGDB:
             "grant_type": "client_credentials"
         }
         response = requests.post(endpoint, data=body)
-        response = self._handle_response(response)
-        if response["success"]:
-            self.token = response["data"]["access_token"]
-            self.expiry = response["data"]["expires_in"]
-            self.headers = {
-                "Client-ID": client_id,
-                "Authorization": f"Bearer {self.token}"
-            }
+        response = self._handle_response(response, callback)
+       
     
     def quick_search(self, game_query: str):
+        
+        def callback(self, response):
+            games = response["data"]
+            for i, game in enumerate(games):
+                img = self._get_game_img(game)
+                response["data"][i]["img"] = img
+            return response
+
         endpoint = self.base_endpoint + "games"
         body = """
                 search "{}";
@@ -70,40 +73,41 @@ class IGDB:
                 limit 20;
         """.format(game_query)
         response = requests.post(endpoint, headers=self.headers, data=body)
-        response = self._handle_response(response)
-        if response["success"]:
-            games = response["data"]
-            for i, game in enumerate(games):
-                if "cover" in game:
-                    response = self._get_game_img(i, game["cover"], response)
-                else:
-                    pass # TODO: implement default img!!!    
-        return response
+        return self._handle_response(response, callback)
             
     # Internal methods
-    def _handle_response(self, response):
+    def _handle_response(self, response, callback):
         try:
             response.raise_for_status()
-            return {"success": True, "data": response.json()}
+            response = {"success": True, "data": response.json()}
+            return callback(self, response)
 
         except requests.exceptions.HTTPError as error:
-            return {"success": False, "error": str(error)}
-
-
-    def _get_game_img(self, i, cover_id, response):
-        self.endpoint = self.base_endpoint + "covers"
-        self.body = """
-                fields *;
-                where id = {};
-        """.format(cover_id)
-        cover_response = requests.post(self.endpoint, headers=self.headers, data=self.body)
-        cover_response = self._handle_response(cover_response)
-        if cover_response["success"]:
-            hash = cover_response["data"][0]["image_id"]
-            img = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{hash}.jpg"
+            response = {"success": False, "error": str(error)}
+            return response["error"]
+        
+    def _get_game_img(self, game: dict):
+        """
+        game: dict of a game
+        Returns: img str of the game cover
+        """
+        if "cover" in game:
             
-            response["data"][i]["img"] = img
-        return response
+            def callback(self, response):
+                hash = response["data"][0]["image_id"]
+                img = f"https://images.igdb.com/igdb/image/upload/t_cover_big/{hash}.jpg"
+                return img
+            
+            cover_id = game["cover"]
+            endpoint = self.base_endpoint + "covers"
+            body = """
+                    fields *;
+                    where id = {};
+            """.format(cover_id)
+            cover_response = requests.post(endpoint, headers=self.headers, data=body)
+            return self._handle_response(cover_response, callback)
+        else:
+            return "Placeholder img!"
                 
 # class TokenState:
 #     """
