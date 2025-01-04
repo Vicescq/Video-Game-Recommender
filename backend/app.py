@@ -20,7 +20,8 @@ class Users(db.Model):
 
 
 
-
+def create_app():
+    pass
 
 
 
