@@ -5,9 +5,10 @@ load_dotenv()
 class IGDB:
     def __init__(self):
         self._token = ""
-        self._expiry = 0   # placeholder int, will be set to the actual expiry in init_token()
         self._base_endpoint = "https://api.igdb.com/v4/"
         self._headers = {}
+        self._client_id = os.getenv("CLIENT_ID")
+        self._client_secret = os.getenv("CLIENT_SECRET")
 
     @property
     def token(self):
@@ -15,13 +16,6 @@ class IGDB:
     @token.setter
     def token(self, value):
         self._token = value
-
-    @property
-    def expiry(self):
-        return self._expiry
-    @expiry.setter
-    def expiry(self, value):
-        self._expiry = value
 
     @property
     def base_endpoint(self):
@@ -33,28 +27,36 @@ class IGDB:
     @headers.setter
     def headers(self, value):
         self._headers = value
+    
+    @property
+    def client_id(self):
+        return self._client_id
+    
+    @property
+    def client_secret(self):
+        return self._client_secret
 
     def init_token(self):
         
         def callback(self, response):
             self.token = response["data"]["access_token"]
-            self.expiry = response["data"]["expires_in"]
+            #   self.expiry = response["data"]["expires_in"]
             self.headers = {
-                "Client-ID": client_id,
+                "Client-ID": self.client_id,
                 "Authorization": f"Bearer {self.token}"
             }
         
         endpoint = "https://id.twitch.tv/oauth2/token"
-        client_id = os.getenv("CLIENT_ID")
-        client_secret = os.getenv("CLIENT_SECRET")
         body = {
-            "client_id": client_id,
-            "client_secret": client_secret,
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
             "grant_type": "client_credentials"
         }
         response = requests.post(endpoint, data=body)
         response = self._handle_response(response, callback)
-       
+
+    def update_token(self):
+        abc = 1
     
     def quick_search(self, game_query: str):
         
@@ -107,7 +109,7 @@ class IGDB:
             cover_response = requests.post(endpoint, headers=self.headers, data=body)
             return self._handle_response(cover_response, callback)
         else:
-            return "Placeholder img!"
+            return "Placeholder img!" # will output str of placeholder img
                 
 # class TokenState:
 #     """
