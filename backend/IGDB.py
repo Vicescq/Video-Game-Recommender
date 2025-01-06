@@ -1,6 +1,5 @@
 import os, requests, time
-from dotenv import load_dotenv
-load_dotenv()
+
 
 class IGDB:
     def __init__(self):
