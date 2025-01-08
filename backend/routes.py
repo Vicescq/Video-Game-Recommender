@@ -1,11 +1,9 @@
+from IGDB import IGDB
+from flask import Blueprint
+main_bp = Blueprint("main_bp", __name__)
 
 
-
-
-
-
-
-@app.route("/")
+@main_bp.route("/")
 def abc():
     IGDB_INSTANCE = IGDB()
     IGDB_INSTANCE.init_token()
