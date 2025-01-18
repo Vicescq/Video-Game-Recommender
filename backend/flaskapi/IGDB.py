@@ -1,6 +1,5 @@
 import os, requests, time
 
-
 class IGDB:
     def __init__(self):
         self._token = ""

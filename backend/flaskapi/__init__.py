@@ -1,7 +1,10 @@
 from flask import Flask
 from flask_cors import CORS
-from db import db
+from flask_sqlalchemy import SQLAlchemy
 import os
+
+db = SQLAlchemy()
+
 
 def create_app(bp):
     app = Flask(__name__)
@@ -14,7 +17,8 @@ def create_app(bp):
     CORS(app)
     db.init_app(app)
     return app
-    
 
 
 
+# with app.app_context():
+    #     db.create_all()
