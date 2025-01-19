@@ -6,7 +6,6 @@ main_bp = Blueprint("main_bp", __name__)
 @main_bp.route("/")
 def abc():
     IGDB_INSTANCE = IGDB()
-    IGDB_INSTANCE.init_token()
     return IGDB_INSTANCE.quick_search("MasterChef: Learn to Cook!")
     
 
