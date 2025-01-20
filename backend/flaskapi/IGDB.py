@@ -9,7 +9,7 @@ class IGDB:
         # initialized in init_token
         self._token = None
         self._headers = None
-        self.init_token()
+        self._init_token()
         
     @property
     def token(self):
@@ -37,26 +37,7 @@ class IGDB:
     def client_secret(self):
         return self._client_secret
 
-    def init_token(self) -> None:
-        """
-        init token and headers properties of api
-        """
-        endpoint = "https://id.twitch.tv/oauth2/token"
-        body = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "grant_type": "client_credentials"
-        }
-        response = requests.post(endpoint, data=body)
-        response = self._handle_response(response)
-        if response["success"]:
-            self.token = response["data"]["access_token"]
-            #   self.expiry = response["data"]["expires_in"]
-            self.headers = {
-                "Client-ID": self.client_id,
-                "Authorization": f"Bearer {self.token}"
-            }
-    
+    # Regular methods
     def quick_search(self, game_query: str) -> list[dict]:
         """
         returns: list of dicts, JSON format of given a game query
@@ -80,6 +61,45 @@ class IGDB:
 
             
     # Internal methods
+    def _init_token(self) -> None:
+        """
+        init token and headers properties of api
+        """
+        endpoint = "https://id.twitch.tv/oauth2/token"
+        body = {
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "grant_type": "client_credentials"
+        }
+        response = requests.post(endpoint, data=body)
+        response = self._handle_response(response)
+        if response["success"]:
+            self.token = response["data"]["access_token"]
+            #   self.expiry = response["data"]["expires_in"]
+            self.headers = {
+                "Client-ID": self.client_id,
+                "Authorization": f"Bearer {self.token}"
+            }
+
+    def _is_token_valid(self) -> bool:
+        """
+        Validates token of api
+        """
+        pass
+
+    def _retrieve_token(self) -> None:
+        """
+        Retrieves token from db
+        """
+        pass
+
+    def _refresh_token(self) -> None:
+        """
+        Refreshes token
+        """
+        pass
+
+
     def _handle_response(self, response) -> dict:
         """
         Handles responses while also catching errors
