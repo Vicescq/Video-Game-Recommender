@@ -1,24 +1,20 @@
 from flask import Flask
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+from flaskapi.routes import dev_bp
+from flaskapi.db import db
 import os
 
-db = SQLAlchemy()
 
+load_dotenv()
 
-def create_app(bp):
+def create_app():
     app = Flask(__name__)
-    app.register_blueprint(bp)
-    
     
     db_pswrd = os.getenv("MYSQL_PASSWORD")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql://root:{db_pswrd}@localhost/video_game_lib_db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     CORS(app)
     db.init_app(app)
+    app.register_blueprint(dev_bp)
+    
     return app
-
-
-
-# with app.app_context():
-    #     db.create_all()
